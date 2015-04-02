@@ -24,7 +24,7 @@ lvs-manager 是lvs cluster的web管理系统
 * urllib2
 
 # Screenshots
-## 性能图标
+## 性能图表
 ![lvs_charts](https://github.com/lxcong/lvs-manager/blob/master/screenshots/lvs_charts.png?raw=true)
 
 ## lvs管理
