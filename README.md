@@ -1,5 +1,5 @@
 # About
-lvs-manager 是lvs cluster的web管理系统
+lvs-manager 是lvs cluster的web管理系统.关于lvs cluster的架构请看这里[突破LVS瓶颈，LVS Cluster部署（OSPF + LVS）](http://my.oschina.net/lxcong/blog/143904)
 
 # 功能
 * 性能图标
