@@ -1,0 +1,41 @@
+{% extends "index.html" %}
+{% block body %}
+<div class="container">
+  <div class='row'>
+    <!-- todo list -->
+    <div class="col-md-3">
+      <div class="well" id="charts_nav">
+        <ul class="nav nav-pills nav-stacked" id="NavTab">
+          <li class="nav-header">LVS流量</li>
+          <li class="active"><a id="nav_lvstraffic_sum" data-toggle="tab">LVS调度总流量</a></li>
+          <li><a id="nav_lvstraffic_vip" href="#2A" data-toggle="tab">LVS各业务流量</a></li>
+          <li class="nav-header">LVS数据包数</li>
+          <li><a id="nav_lvspkts_sum"  href="#2A" data-toggle="tab">LVS调度总数据包</a></li>
+          <li><a id="nav_lvspkts_vip"  href="#2A" data-toggle="tab">LVS各业务数据包</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class='col-md-9' id="tpl">
+    </div>
+
+    <div id="messagemodal" class="modal  fade">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>数据图像</h3>
+      </div>
+      <div class="modal-body" id="messagebody">
+      <div id="messagecharts"  style="min-width:400px;height:400px;margin:0 auto;"></div>
+      </div>
+      <div class="modal-footer" id="messagefooter">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+      </div>
+    </div>
+  
+  </div>
+</div>
+
+<script src="/lib/lvstraffic.js"></script>
+<script src="/lib/lvspkts.js"></script>
+<script src="/lib/app.js"></script>
+{% endblock %}

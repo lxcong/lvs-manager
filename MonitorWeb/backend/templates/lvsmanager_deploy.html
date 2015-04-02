@@ -1,0 +1,107 @@
+{% extends "index.html" %}
+{% block body %}
+<div class="container">
+	<div class='row'>
+	  <div class="col-md-12">
+	  	<ul class="breadcrumb">
+		  <li><a href="/lvsmanager/">LVS管理</a> <span class="divider"></span></li>
+		  <li class="active">LVS配置</li>
+		</ul>
+	  </div>
+	</div>
+
+	<div class='row'>
+		<div class='col-md-12'>
+			<h4>集群:{{ cluster }}</h4>
+			<hr>
+			<a href="/lvsmanager_deploy_add/?id={{ cluster }}" class='btn btn-success' ><span class="fui-plus"></span>新增VIP实例</a>
+		</div>
+		</br>
+		<div class='col-md-12'>
+		{% if vipinstanceinfo %}
+			<table id="lvsmanager_table" class="table table-bordered table-hover">
+			  <thead>
+			    <tr>
+			      <th style="width: 10%">VIP实例</th>
+			      <th style="width: 10%">业务</th>
+			      <th style="width: 10%">负责人</th>
+			      <th style="width: 10%">VIP地址组</th>
+			      <th style="width: 10%">协议</th>
+			      <th style="width: 10%">调度算法</th>
+				  <th style="width: 40%">操作</th>
+			    </tr>
+			  </thead>
+			  <tbody id='publish_table_body'>
+				  {% for vipinstance in vipinstanceinfo %}
+				    <tr {% if vipinstance.status == "offline" %}style="background-color: orange;"{% endif %}>
+				      <td>{{ vipinstance.vip_instance }}</td>
+				      <td>{{ vipinstance.descript }}</td>
+				      <td>{{ vipinstance.owners }}</td>
+				      <td>{% for vip in vipinstance.vip_group %}
+				      {{ vip.vip }}:{{ vip.port }}{% endfor %}</td>
+				      <td>{{ vipinstance.protocol }}</td>
+				      <td>{{ vipinstance.lb_algo }}</td>
+				      <td><a href="/lvsmanager_deploy_edit/?id={{ vipinstance._id }}" class='btn btn-sm btn-success'><span class="fui-new"></span>编辑</a> {% if vipinstance.status == 'offline' %}<a href="javascript:;" onClick="javascript:online_vip_instance('{{ vipinstance._id }}','{{ vipinstance.vip_instance }}')" class='btn btn-sm btn-info'><span class="fui-play"></span>上线</a>{% else %}<a href="javascript:;" onClick="javascript:offline_vip_instance('{{ vipinstance._id }}','{{ vipinstance.vip_instance }}')" class='btn btn-sm btn-warning'><span class="fui-pause"></span>下线</a>{% endif %} <a href="javascript:;" onClick="javascript:remove_vip_instance('{{ vipinstance._id }}','{{ vipinstance.vip_instance }}')" class='btn btn-sm btn-danger'><span class="fui-cross"></span>删除</a></td>
+				    </tr>
+				  {% endfor %}
+			  </tbody>
+			</table>
+		{% else %}
+			<p>不存在VIP实例，请新增！</p>
+		{% endif %}
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	function remove_vip_instance(vip_instance_id,vip_instance) {
+		bootbox.confirm("警告: 是否删除VIP实例:"+ vip_instance ,function(result) {
+			if ( result ) {
+				var _post_data = $.toJSON({"id":vip_instance_id})
+				$.ajax({
+					  type: 'POST' ,
+			          url: '/lvsmanager_deploy_del/' ,
+			          data: _post_data ,
+			          cache: false ,
+			          success: function(data) {
+			               	window.location.href="/lvsmanager_deploy/?id={{ cluster }}"
+			          },
+			      });
+			}
+		});
+	}
+
+	function offline_vip_instance(vip_instance_id,vip_instance) {
+		bootbox.confirm("警告: 是否下线VIP实例:"+ vip_instance ,function(result) {
+			if ( result ) {
+				var _post_data = $.toJSON({"id":vip_instance_id})
+				$.ajax({
+					  type: 'POST' ,
+			          url: '/lvsmanager_deploy_offline/' ,
+			          data: _post_data ,
+			          cache: false ,
+			          success: function(data) {
+			               	window.location.href="/lvsmanager_deploy/?id={{ cluster }}"
+			          },
+			      });
+			}
+		});
+	}
+
+	function online_vip_instance(vip_instance_id,vip_instance) {
+		bootbox.confirm("是否上线VIP实例:"+ vip_instance ,function(result) {
+			if ( result ) {
+				var _post_data = $.toJSON({"id":vip_instance_id})
+				$.ajax({
+					  type: 'POST' ,
+			          url: '/lvsmanager_deploy_online/' ,
+			          data: _post_data ,
+			          cache: false ,
+			          success: function(data) {
+			               	window.location.href="/lvsmanager_deploy/?id={{ cluster }}"
+			          },
+			      });
+			}
+		});
+	}
+</script>
+{% endblock %}

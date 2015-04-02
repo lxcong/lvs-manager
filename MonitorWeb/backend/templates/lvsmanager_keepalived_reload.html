@@ -1,0 +1,113 @@
+{% extends "index.html" %}
+{% block body %}
+<div class="container">
+	<div class='row'>
+	  <div class="col-md-12">
+	  	<ul class="breadcrumb">
+		  <li><a href="/lvsmanager/">LVS管理</a> <span class="divider"></span></li>
+		  <li class="active">Keepalived操作</li>
+		</ul>
+	  </div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<ul class="nav nav-tabs">
+		      <li class="active"><a href="/lvsmanager_keepalived_reload/?id={{ cluster.id }}">Keepalived Reload操作</a></li>
+		      <li ><a href="/lvsmanager_keepalived_start_or_stop/?id={{ cluster.id }}">Keepalived Start/Stop操作</a></li>
+		      <li ><a href="/lvsmanager_keepalived_ipvsadm/?id={{ cluster.id }}">ipvsadm -Ln</a></li>
+		    </ul>
+		</div>
+	</div>
+	</br>
+	<h4>集群信息</h4>
+	<div class="container well">
+		<fieldset>
+			<fieldset class="control-group col-md-6" title="">
+	            <label class="control-label">集群ID</label>
+	            <div class="controls">
+	              <input value="{{ cluster.id }}" type="text"/>
+	              
+	              <!--<p class="help-block"></p>-->
+	            </div>
+	          </fieldset>
+	
+	          <fieldset class="control-group col-md-6" title="">
+	            <label class="control-label">集群机房</label>
+	            <div class="controls">
+	              <input value="{{ cluster.area }}" type="text"/>
+	              
+	              <!--<p class="help-block"></p>-->
+	            </div>
+	          </fieldset>
+	          
+	           <fieldset class="control-group col-md-6" title="">
+	            <label class="control-label">集群描述</label>
+	            <div class="controls">
+	              <input value="{{ cluster.descript }}" type="text"/>
+	              
+	              <!--<p class="help-block"></p>-->
+	            </div>
+	            </fieldset>
+		  </fieldset>
+	</div>
+	
+	<h4>执行框</h4>
+	<div class="container well">
+		<div class="row">
+			<div class="col-md-12">
+				<select id="lvsmanager_keepalived_reload_select" multiple title='请选择需要进行操作的LB' >
+					{% for lb in cluster.lb %}
+					<option value="{{ lb.id }}">{{ lb.id }}/{{ lb.ipadd }}</option>
+					{% endfor %}
+				</select>
+				<button id="lvsmanager_keepalived_reload_run" class="btn inline btn-primary" style="position:relative ; top:-5px ">Reload</button>
+			</div>
+		</div>
+	</div>
+	
+	<h4>执行结果</h4>
+	<div class="container well">
+		<div class="row">
+			<div class="col-md-12">
+				<pre id="lvsmanager_keepalived_reload_return_text">
+					
+				</pre>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$("#lvsmanager_keepalived_reload_select").selectpicker({style: 'btn-info', menuStyle: 'dropdown-inverse'});
+
+	//run reload
+	$("#lvsmanager_keepalived_reload_run").click(function() {
+		var id = '{{ cluster.id }}'
+		var lb_list = $("#lvsmanager_keepalived_reload_select").val()
+		if ( lb_list  ) {
+			var json_data = JSON.stringify({"id":id,"lb_list":lb_list});
+			var loading=new ol.loading({id:"lvsmanager_keepalived_reload_return_text"}) ;
+			$.ajax({
+				  type: 'POST' ,
+		          url: '/lvsmanager_keepalived_reload/' ,
+		          cache: false ,
+		          data:  json_data,
+		          beforeSend: function() { loading.show()} ,
+		          success: function(data) {
+		          		loading.hide() ;
+		          		$("#lvsmanager_keepalived_reload_return_text").text(data)
+
+		          },
+		          error: function(XMLHttpRequest) {
+		          	loading.hide() ;
+		          	bootbox.alert('执行操作失败')
+		          }
+			});
+		}
+		else {
+			bootbox.alert('没有选择需要操作的LB')
+		}
+
+	});
+</script>
+{% endblock %}

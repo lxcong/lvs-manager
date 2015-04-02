@@ -1,0 +1,35 @@
+base:
+  NUMBER_OF_PROCESSES: 4
+
+agent:
+  -  id: wx_lvs_cluster03
+     ipadd: 10.57.11.4
+     cluster: wx_lvs_cluster
+     area: wx
+     port: 60090
+
+  -  id: wx_lvs_cluster04
+     ipadd: 10.57.11.6
+     cluster: wx_lvs_cluster
+     area: wx
+     port: 60090
+
+  -  id: wx_lvs_cluster02
+     ipadd: 10.57.12.50
+     cluster: wx_lvs_cluster
+     area: wx
+     port: 60090
+
+  -  id: wx_lvs_cluster01
+     ipadd: 10.57.12.52
+     cluster: wx_lvs_cluster
+     area: wx
+     port: 60090
+
+cluster:
+  - id: wx_lvs_cluster
+    area: 无锡
+    descript: 无锡LVS集群
+    agent: ['wx_lvs_cluster01','wx_lvs_cluster02','wx_lvs_cluster03','wx_lvs_cluster04']
+    admin_mail_group: ['snake13612227008@gmail.com']
+    manager_user: []

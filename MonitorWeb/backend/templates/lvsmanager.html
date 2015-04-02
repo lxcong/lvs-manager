@@ -1,0 +1,93 @@
+{% extends "index.html" %}
+{% block body %}
+<div class="container">
+	<div class='row'>
+	  <div class="col-md-12">
+	  	<ul class="breadcrumb">
+		  <li><a href="#">LVS管理</a> <span class="divider">/</span></li>
+		</ul>
+		<div class='row'>
+		    <div class="col-md-12">
+		      <div class="well form-search" method="get" action="">
+		      	<form id="lvsmanager_search_button">
+		        <p>
+		         <select id="lvsmanager_search_select" >
+					 <option value="vip">VIP/虚拟IP</option>
+					 <option value="rs">RS/真实IP</option>
+				 </select>
+				 <input type="text"  id="lvsmanager_search_input" maxlength="50"  />
+				</p>
+					<button  type="submit"  class="btn btn-primary">搜索</button>
+				</form>
+		      </div>
+		    </div>
+	  	</div>
+        {% if current_user is  user_is_manager %}
+		<table id="lvsmanager_table" class="table table-bordered table-hover">
+		  <thead>
+		    <tr>
+		      <th style="width: 15%">集群</th>
+		      <th style="width: 15%">描述</th>
+		      <th style="width: 10%">机房</th>
+		      <th style="width: 10%">LB</th>
+			  <th>操作</th>
+		    </tr>
+		  </thead>
+		  <tbody id='publish_table_body'>
+		  {% for cluster in cluster_list %}
+		    <tr>
+		      <td>{{ cluster.id }}</td>
+		      <td>{{ cluster.descript }}</td>
+		      <td>{{ cluster.area }}</td>
+		      <td>{% for lb in cluster.lb %}
+		      {{ lb.ipadd }}{% endfor %}</td>
+		      <td><a href="/lvsmanager_deploy/?id={{ cluster.id }}" class='btn btn-success'><span class="fui-gear"></span></span>配置</a><a href="/lvsmanager_rollback/?id={{ cluster.id }}"  class='btn btn-primary' style="position: relative;
+left: 5px;"><span class="fui-arrow-left"></span>回滚</a><a href="#" onCLick="lvsmanagerpublish('{{ cluster.id }}')" class='btn btn-warning' style="position: relative;
+left: 10px;"><span class="fui-check-inverted-2"></span>发布</a><a href="/lvsmanager_keepalived_reload/?id={{ cluster.id }}" class='btn btn-danger' style="position: relative;
+left: 15px;"><span class="fui-calendar-solid"></span>Keepalived操作</a></td>
+		    </tr>
+		  {% endfor %}
+		  </tbody>
+		</table>
+        {% endif %}
+	  </div>
+	</div>
+</div>
+
+<script type="text/javascript">
+
+	function lvsmanagerpublish(id) {
+		bootbox.prompt("请输入本次发布的说明",function(result){
+			if ( result ) {
+				$.ajax({
+				  type: 'GET' ,
+		          url: '/lvsmanager_publish/?id=' + id + '&mess=' + result ,
+		          cache: false ,
+		          success: function(data) {
+		          			var _data = '<pre>发布结果:\n' +data + '</pre>'
+		          			bootbox.alert(_data,function() {
+		          				window.location.href="/lvsmanager_keepalived_reload/?id=" + id ;
+		          			})
+
+		          },
+		          error: function(XMLHttpRequest) {
+		          	bootbox.alert('发布失败')
+		          }
+		      	});
+			}
+		})
+	};
+
+	$("#lvsmanager_search_button").submit(function() {
+		var type = $("#lvsmanager_search_select").val() ;
+		var value = $("#lvsmanager_search_input").val() ;
+		if ( type == "vip") {
+			window.location.href="/lvsmanager_search/?vip=" + value ;
+		}
+		else if ( type == "rs" ) {
+			window.location.href="/lvsmanager_search/?rs=" + value ;	
+		}
+		return false ;
+	})
+</script>
+{% endblock %}

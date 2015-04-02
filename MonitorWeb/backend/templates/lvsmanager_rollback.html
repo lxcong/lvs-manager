@@ -1,0 +1,87 @@
+{% extends "index.html" %}
+{% block body %}
+<div class="container">
+  <div class='row'>
+  	<div class="col-md-12">
+		<ul class="breadcrumb">
+		  <li><a href="/lvsmanager/">LVS管理</a> <span class="divider"></span></li>
+		  <li class="active">LVS回滚</li>
+		</ul>
+  	</div>
+  </div>
+
+  <div class="row">
+  	<div class='col-md-12'>
+  	<h4>集群: {{ cluster_id }}</h4>
+  	<hr>
+  	{% if publishlist %}
+		<table  id="lvsmanagerrollbacktable" class="table table-bordered table-hover">
+		  <thead>
+		    <tr>
+		      <th style="width: 15%">发布时间</th>
+		      <th style="width: 10%">版本号</th>
+		      <th style="width: 55%">发布说明</th>
+		      <th style="width: 10%">发布结果</th>
+		      <th style="width: 10%">操作</th>
+		    </tr>
+		  </thead>
+		  <tbody >
+			  {% for publish in publishlist %}
+			    <tr>
+			      <td>{{ publish.time | timestamptodate}}</td>
+			      <td>{{ publish.rev }}</td>
+			      <td>{{ publish.message }}</td>
+			      <td>{% if publish.publish_result %}<button class="btn btn-success">成功</button>{% else %}<button class="btn btn-danger">失败</button>{% endif %}</td>
+			      <td><a href="#" onClick="lvsrollback('{{ publish._id }}')" class='btn btn-success'><span class="fui-new"></span>回滚</a></td>
+			    </tr>
+			  {% endfor %}
+		  </tbody>
+		</table>
+	{% else %}
+	<p>不存在发布记录</p>
+	{% endif %}
+  	</div>
+  </div>
+</div>
+<script type="text/javascript">
+$('#lvsmanagerrollbacktable').dataTable( {       
+      "oLanguage": {
+      "sUrl": "/lib/dataTable-bootstrap/zh_CN.json"
+    } ,
+      "aaSorting": [ [0,'desc']] ,
+      "iDisplayLength": 10 ,
+      "aLengthMenu": [[10, 25, -1], [10, 25, "All"]] 
+});
+
+function lvsrollback(id) {
+		bootbox.prompt("请输入本次发布的说明",function(result){
+			if ( result ) {
+				var post_data = {"id":id,"mess":result}
+				var _post_data = $.toJSON(post_data)
+				$.ajax({
+				  type: 'POST' ,
+		          url: '/lvsmanager_rollback/' ,
+		          cache: false ,
+		          data:  _post_data,
+		          success: function(data) {
+		          			if (data == '不存配置文件，停止发布') {
+		          				location.reload() ;
+		          			}
+		          			else {
+		          				var _data = '<pre>发布结果:\n' +data + '</pre>' ;
+			          			bootbox.alert(_data,function() {
+			          				window.location.href="/lvsmanager_keepalived_reload/?id={{ cluster_id }}"
+			          			}) ;
+		          			}
+
+		          },
+		          error: function(XMLHttpRequest) {
+		          	bootbox.alert('发布失败')
+		          }
+		      	});
+			}
+		})
+	};
+	
+</script>
+{% endblock %}

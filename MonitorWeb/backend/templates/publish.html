@@ -1,0 +1,95 @@
+{% extends "status.html" %}
+{% block active_publish %}class="active"{% endblock %}
+{% block status %}
+</br>
+<table id="publish_table" class="table table-bordered table-hover">
+  <thead>
+    <tr>
+      <th>集群</th>
+      <th>提交人</th>
+      <th>提交信息</th>
+      <th>版本号</th>
+      <th>info信息</th>
+      <th>访问测试</th>
+    </tr>
+  </thead>
+  <tbody id='publish_table_body'>
+  {% for i in publish %}
+    <tr id='{{ i._id }}'>
+      <td>{{ i.id }}</td>
+      <td>{{ i.author }}</td>
+      <td>{{ i.log }}</td>
+      <td>{{ i.rev }}</td>
+      <td class="infoyaml"><button class="btn btn-block btn-success">查看info</button></td>
+      <td class="network_test"><button class="btn btn-block btn-warning">开始测试</button></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="toggler">
+  <div id="publish_modle">
+    <div id="publish_body"></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$('#publish_table').dataTable( {       
+      "oLanguage": {
+      "sUrl": "/lib/dataTable-bootstrap/zh_CN.json"
+    } ,
+      "aaSorting": [ [5,'desc']] ,
+      "iDisplayLength": 5 ,
+      "aLengthMenu": [[5, 10, 25, -1], [5, 10, 25, "All"]] 
+});
+
+$(".network_test").click(function () {
+  var par = $(this).parent() ;
+  var id = $(par).attr('id') ;
+
+  var selectedEffect = 'fold' ;
+  var options = {}
+  $('#publish_modle').hide(selectedEffect,options,1000) ;
+  $('#publish_modle').show(selectedEffect,options,1000) ;
+  var loading=new ol.loading({id:"publish_table"}) ;
+  $.ajax({
+      url: '/lb_status_publish_networktest?id=' + id ,
+      beforeSend: function() { loading.show() } ,
+      cache: false ,
+      success: function(data) {
+        loading.hide() ;
+        $("#publish_body").html(data);
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        loading.hide() ;
+        alert('失败') ;
+      },
+  });
+});
+
+$(".infoyaml").click(function () {
+  var par = $(this).parent() ;
+  var id = $(par).attr('id') ;
+
+  var selectedEffect = 'fold' ;
+  var options = {}
+  $('#publish_modle').hide(selectedEffect,options,1000) ;
+  var loading=new ol.loading({id:"publish_table"}) ;
+  $.ajax({
+      url: '/lb_status_publish_infoyaml?id=' + id ,
+      beforeSend: function() { loading.show() } ,
+      cache: false ,
+      success: function(data) {
+        loading.hide() ;
+        $("#publish_body").html(data);
+        $('#publish_modle').show(selectedEffect,options,1000) ;
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        loading.hide() ;
+        alert('失败') ;
+      },
+  });
+});
+
+</script>
+{% endblock %}

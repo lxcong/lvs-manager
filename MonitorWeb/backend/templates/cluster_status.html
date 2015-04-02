@@ -1,0 +1,25 @@
+{% extends "status.html" %}
+{% block active_cluster_status %}class="active"{% endblock %}
+{% block status %}
+<table class="table table-bordered table-hover">
+  <thead>
+    <tr>
+      <th>cluster</th>
+      <th>loadblance</th>
+      <th>vip</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>wx_lvs_cluster</td>
+      <td><a class="btn btn-block btn-warning">LB: 4</a></td>
+      <td><a class="btn btn-block btn-primary">VIP: 60</a></td>
+    </tr>
+    <tr>
+      <td>zw_lvs_cluster</td>
+      <td><a class="btn btn-block btn-warning">LB: 2</a></td>
+      <td><a class="btn btn-block btn-primary">VIP: 30</a></td>
+    </tr>
+  </tbody>
+</table>
+{% endblock %}

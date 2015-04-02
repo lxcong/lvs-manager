@@ -1,0 +1,121 @@
+{% extends "index.html" %}
+{% block body %}
+<div class="container">
+	<div class='row'>
+	  <div class="col-md-12">
+	  	<ul class="breadcrumb">
+		  <li><a href="/lvsmanager/">LVS管理</a> <span class="divider"></span></li>
+		  <li class="active">Search</li>
+		</ul>
+			{% if result %}
+			<table id="lvsmanager_table" class="table table-bordered table-hover">
+			  <thead>
+			    <tr>
+			      <th style="width: 10%">集群</th>
+			      <th style="width: 10%">业务</th>
+			      <th style="width: 10%">负责人</th>
+			      <th style="width: 10%">vip地址组</th>
+			      <th style="width: 10%">协议</th>
+			      <th style="width: 10%">调度算法</th>
+			      <th style="width: 10%">rs列表</th>
+                  {% if current_user is  user_is_manager %}
+				  <th style="width: 30%">操作</th>
+                  {% endif %}
+			    </tr>
+			  </thead>
+			  <tbody id='publish_table_body'>
+			  {% for result_record in result %}
+			    <tr {% if result_record.status == "offline" %}style="background-color: orange;"{% endif %}>
+			      <td>{{ result_record.cluster_id }}</td>
+			      <td>{{ result_record.descript }}</td>
+			      <td>{{ result_record.owners }}</td>
+			      <td>{% for vip in result_record.vip_group %}
+			      {{ vip.vip }}:{{ vip.port }}{% endfor %}</td>
+			      <td>{{ result_record.protocol }}</td>
+			      <td>{{ result_record.lb_algo }}</td>
+			      <td>{% for rs in result_record.rs %}<{{ rs.manager_ip }}>{% endfor %}</td>
+                  {% if current_user is  user_is_manager %}
+			      <td><a href="/lvsmanager_deploy_edit/?id={{ result_record._id }}" class='btn btn-sm btn-success'><span class="fui-new"></span>编辑</a> {% if result_record.status == 'offline' %}<a href="javascript:;" onClick="javascript:online_vip_instance('{{ result_record._id }}','{{ result_record.vip_instance }}')" class='btn btn-sm btn-info'><span class="fui-play"></span>上线</a>{% else %}<a href="javascript:;" onClick="javascript:offline_vip_instance('{{ result_record._id }}','{{ result_record.vip_instance }}')" class='btn btn-sm btn-warning'><span class="fui-pause"></span>下线</a>{% endif %} <a href="javascript:;" onClick="javascript:remove_vip_instance('{{ result_record._id }}','{{ result_record.vip_instance }}')" class='btn btn-sm btn-danger'><span class="fui-cross"></span>删除</a></td>
+                  {% endif %}
+			    </tr>
+			  {% endfor %}
+			  </tbody>
+			</table>
+			{% else %}
+			<h4>搜索无结果</h4>
+			{% endif %}
+	  </div>
+	</div>
+</div>
+<script type="text/javascript">
+	function remove_vip_instance(vip_instance_id,vip_instance) {
+		bootbox.confirm("警告: 是否删除VIP实例:"+ vip_instance ,function(result) {
+			if ( result ) {
+				var _post_data = $.toJSON({"id":vip_instance_id})
+				$.ajax({
+					  type: 'POST' ,
+			          url: '/lvsmanager_deploy_del/' ,
+			          data: _post_data ,
+			          cache: false ,
+			          success: function(data) {
+			               	window.location.href="/lvsmanager/"
+			          },
+			      });
+			}
+		});
+	}
+
+	function offline_vip_instance(vip_instance_id,vip_instance) {
+		bootbox.confirm("警告: 是否下线VIP实例:"+ vip_instance ,function(result) {
+			if ( result ) {
+				var _post_data = $.toJSON({"id":vip_instance_id})
+				$.ajax({
+					  type: 'POST' ,
+			          url: '/lvsmanager_deploy_offline/' ,
+			          data: _post_data ,
+			          cache: false ,
+			          success: function(data) {
+			               	location.reload() ;
+			          },
+			      });
+			}
+		});
+	}
+
+	function online_vip_instance(vip_instance_id,vip_instance) {
+		bootbox.confirm("是否上线VIP实例:"+ vip_instance ,function(result) {
+			if ( result ) {
+				var _post_data = $.toJSON({"id":vip_instance_id})
+				$.ajax({
+					  type: 'POST' ,
+			          url: '/lvsmanager_deploy_online/' ,
+			          data: _post_data ,
+			          cache: false ,
+			          success: function(data) {
+			               	location.reload() ;
+			          },
+			      });
+			}
+		});
+	}
+
+	function dis_rs_list(id) {
+		$.ajax({
+		  type: 'GET' ,
+          url: '/lvsmanager_deploy_dis_rslist/?id=' + id,
+          cache: false ,
+          data_type: 'JSON' ,
+          success: function(data) {
+          			var _data = '<pre>发布结果:\n' +data + '</pre>'
+          			bootbox.alert(_data,function() {
+          				window.location.href="/lvsmanager_keepalived_reload/?id=" + id ;
+          			})
+
+          },
+          error: function(XMLHttpRequest) {
+          	bootbox.alert('发布失败')
+          }
+      	});
+	};
+</script>
+{% endblock %}

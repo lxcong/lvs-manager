@@ -1,0 +1,549 @@
+{% extends "index.html" %}
+{% block body %}
+<div class="container">
+  <div class='row'>
+  	<div class="col-md-12">
+		<ul class="breadcrumb">
+		  <li><a href="/lvsmanager/">LVS管理</a> <span class="divider"></span></li>
+		  <li><a href="/lvsmanager_deploy/?id={{ vipinstance.cluster_id }}">LVS配置</a> <span class="divider"></span></li>
+		  <li class="active">修改VIP实例</li>
+		</ul>
+  	</div>
+  </div>
+
+  <div class='row'>
+  	<div class='col-md-12' id='lvsmanager_deploy_add_body'>
+  		<h4>VIP</h4>
+  		<hr>
+	  	<form class="form-horizontal">
+			<div class="control-group">
+		      <label class="control-label" for="vipinstance">VIP实例</label>
+		      <div class="controls">
+		        <td><input id="vip_instance" class="lvs_manager_deploy_add_vip_input" type="text" name='vip_instance' check-type="required" value="{{ vipinstance.vip_instance }}"><span class="help-block">VIP实例，在集群中必须是唯一</span></td>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="descript">业务</label>
+		      <div class="controls">
+		        <td><input id="descript" class="lvs_manager_deploy_add_vip_input" type="text" name='descript' value="{{ vipinstance.descript }}"></td>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="owners">负责人</label>
+		      <div class="controls">
+		        <td><input id="owners" class="lvs_manager_deploy_add_vip_input" type="text" name='owners' value="{{ vipinstance.owners }}"></td>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="mailto">警告邮件列表</label>
+		      <div class="controls">
+		        <td><input style="width: 310px;" id="mailto" class="lvs_manager_deploy_add_vip_input" type="text" name='mailto' value="{{ vipinstance.mailto }}"><span class="help-block">警告邮件列表,以逗号分割,例如:xxxx@xx.xx,xxxx@xx.xx</span></td>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="vip_group">VIP组</label>
+		      <div class="controls">
+		        <td><input style="width: 310px;" id="vip_group" class="lvs_manager_deploy_add_vip_input" type="text" name='vip' value="{{ vipinstance.vip_group }}"><span class="help-block">VIP组列表,以逗号分割.例如:1.1.1.1:80,2.2.2.2:80</span></td>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="protocol">调度方法</label>
+		      <div class="controls">
+		        <select id="protocol" class="lvs_manager_deploy_add_vip_input" name='protocol'>
+		        	<option value='{{ vipinstance.protocol }}'>{{ vipinstance.protocol }}</option>
+		        	<option value='TCP'>TCP</option>
+		        	<option value='UDP'>UDP</option>
+		        </select>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="delay_loop">检测间隔</label>
+		      <div class="controls">
+		        <td><input style="width: 40px;" id="delay_loop" class="lvs_manager_deploy_add_vip_input" type="text" name='delay_loop' value="{{ vipinstance.delay_loop }}"></td>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="lb_algo">协议</label>
+		      <div class="controls">
+		        <select id="lb_algo" class="lvs_manager_deploy_add_vip_input" name='lb_algo'>
+		        	<option value='{{ vipinstance.lb_algo }}'>{{ vipinstance.lb_algo }}</option>
+		        	<option value='wrr'>wrr</option>
+		        	<option value='rr'>rr</option>
+		        	<option value='lc'>lc</option>
+		        	<option value='wlc'>wlc</option>
+		        	<option value='lblc'>lblc</option>
+		        	<option value='sh'>sh</option>
+		        	<option value='dh'>dh</option>
+		        </select>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="lb_kind">调度模式</label>
+		      <div class="controls">
+		        <select id="lb_kind" class="lvs_manager_deploy_add_vip_input" name='lb_kind'>
+		        	<option value='{{ vipinstance.lb_kind }}'>{{ vipinstance.lb_kind }}</option>
+		        	<option value='FNAT'>FNAT</option>
+		        	<option value='DR'>DR</option>
+		        	<option value='NAT'>NAT</option>
+		        	<option value='TUN'>TUN</option>
+		        </select>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="persistence_timeout">会话保持时间</label>
+		      <div class="controls">
+		        <td><input style="width: 40px;" id="persistence_timeout" class="lvs_manager_deploy_add_vip_input" type="text" name='persistence_timeout' placeholder="会话保持时间" value='{{ vipinstance.persistence_timeout }}' ></td>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="sync_proxy">sync_proxy防御</label>
+		      <div class="controls">
+		        <td><input id="sync_proxy" class="lvs_manager_deploy_add_vip_checkbox " name='sync_proxy' type='checkbox' value='True' {% if vipinstance.sync_proxy %}checked="true"{% endif %}></td>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="alpha">alpha</label>
+		      <div class="controls">
+		        <td><input id="alpha" class="lvs_manager_deploy_add_vip_checkbox" name='alpha' type='checkbox' value='True' {% if vipinstance.alpha %}checked="true"{% endif %}><span class="help-block">是否开启alpha模式,启动时默认rs是down状态，健康检查通过后才添加到lvs pool</span></td>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="omega">omega</label>
+		      <div class="controls">
+		        <td><input id="omega" class="lvs_manager_deploy_add_vip_checkbox" name='omega' type='checkbox' value='True' {% if vipinstance.omega %}checked="true"{% endif %}><span class="help-block">是否开启omega模式，清楚rs时会执行相应的脚本(quorum_up)</span></td>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="quorum">quorum</label>
+		      <div class="controls">
+		        <td><input style="width: 40px;" id="quorum" class="lvs_manager_deploy_add_vip_input" type="text" name='quorum' value='{{ vipinstance.quorum }}' ><span class="help-block">服务是否有效的阀值</span></td>
+		      </div>
+		    </div>
+		    <div class="control-group">
+		      <label class="control-label" for="hysteresis">hysteresis</label>
+		      <div class="controls">
+		        <td><input style="width: 40px;" id="hysteresis" class="lvs_manager_deploy_add_vip_input" type="text" name='hysteresis' value='{{ vipinstance.hysteresis }}'><span class="help-block">延迟系数，跟quorum配合使用</span></td>
+		      </div>
+		    </div>
+		</form>
+		</br>
+		<h4>RealServer组</h4>
+		<hr>
+		<button id="rs_add" class='btn btn-success'><span class="fui-plus"></span>添加RS</button>
+		<table class="table table-bordered table-hover">
+			  <thead>
+			    <tr>
+			      <th style="width: 10%">管理IP</th>
+			      <th style="width: 10%">服务IP</th>
+			      <th style="width: 10%">权重</th>
+			      <th style="width: 40%">port列表</th>
+			      <th style="width: 10%">监控方式</th>
+			      <th>操作</th>
+			    </tr>
+			  </thead>
+			  <tbody id='rs_talbe_body'>
+			  {% for rs in vipinstance.rs %}
+			  <tr>
+			  	<td>{{ rs.manager_ip }}</td>
+			  	<td>{{ rs.server_ip }}</td>
+			  	<td>{{ rs.weight }}</td>
+			  	<td>{{ rs.port }}</td>
+			  	<td>{{ rs.monitor.type }}</td>
+			  	<td><a href="javascript:rs_offline({{ rs.index }})" ><span class="fui-cross"></span>offline</a><a style="position: relative;left: 10px;" href="javascript:rs_edit({{ rs.index }})" ><span class="fui-new"></span>edit</a></td>
+			  </tr>
+			  {% endfor %}
+			  </tbody>
+		</table>
+		<hr>
+		<button style="position: relative;left: 770px;" class='btn btn-danger' id="lvs_deploy_add_submit" ><span class="fui-checkbox-checked"></span>保存修改</button>
+		<a href="/lvsmanager_deploy/?id={{ vipinstance.cluster_id }}" style="position: relative;left: 770px;" class='btn btn-primary'><span class="fui-arrow-left"></span>返回</a>
+  	</div>
+  </div>
+
+
+
+<div id="dialog-form" title="新增RS配置">
+  <form>
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label" for="manager_ip">管理IP</label>
+      <div class="controls">
+        <td><input id="manager_ip" type="text" name='manager_ip'><span class="help-block">用于登录管理的IP</span></td>
+      </div>
+	</div>
+	<div class="control-group">
+      <label class="control-label" for="server_ip">服务IP</label>
+      <div class="controls">
+        <td><input id="server_ip" type="text" name='server_ip'><span class="help-block">用于RS提供服务的IP</span></td>
+      </div>
+	</div>
+	<div class="control-group">
+      <label class="control-label" for="weight">权重</label>
+      <div class="controls">
+        <td><input id="weight" type="text" name='weight'><span class="help-block">用于调节RS的负载压力</span></td>
+      </div>
+	</div>
+	<div class="control-group">
+      <label class="control-label" for="rs_port">port列表</label>
+      <div class="controls">
+        <td><input id="rs_port" type="text" name='rs_port'><span class="help-block">端口的列表,以逗号分割</span></td>
+      </div>
+	</div>
+	<div class="control-group">
+      <label class="control-label" for="monitor_type">监控方式</label>
+      <div class="controls">
+        <select id="monitor_type" class="monitor_type" name='monitor_type'>
+	    	<option value='HTTP_GET'>HTTP_GET</option>
+	    	<option value='TCP_CHECK'>TCP_CHECK</option>
+	    	<option value='MISC_CHECK'>MISC_CHECK</option>
+		</select>
+      </div>
+	</div>
+	<div id="monitor_method">
+		<div class="control-group">
+	      <label class="control-label" for="path">path</label>
+	      <div class="controls">
+	        <td><input id="path" class="monitor_method_input" type="text" name='path'></td>
+	      </div>
+		</div>
+		<div class="control-group">
+	      <label class="control-label" for="digest">digest</label>
+	      <div class="controls">
+	        <td><input id="digest" class="monitor_method_input" type="text" name='digest'></td>
+	      </div>
+		</div>
+		<div class="control-group">
+	      <label class="control-label" for="connect_timeout">连接超时时间</label>
+	      <div class="controls">
+	        <td><input id="connect_timeout" class="monitor_method_input" type="text" name='connect_timeout'></td>
+	      </div>
+		</div>
+		<div class="control-group">
+	      <label class="control-label" for="nb_get_retry">重连次数</label>
+	      <div class="controls">
+	        <td><input id="nb_get_retry" class="monitor_method_input" type="text" name='nb_get_retry'></td>
+	      </div>
+		</div>
+		<div class="control-group">
+	      <label class="control-label" for="delay_before_retry">重连间隔时间</label>
+	      <div class="controls">
+	        <td><input id="delay_before_retry" class="monitor_method_input" type="text" name='delay_before_retry'></td>
+	      </div>
+		</div>
+	</div>
+  </fieldset>
+  </form>
+</div>
+
+<div id="dialog-form-edit" title="修改RS配置">
+  <form>
+  <fieldset>
+  	<input id="edit_record_rs_num" type="text" class="hide">
+    <div class="control-group">
+      <label class="control-label" for="manager_ip">管理IP</label>
+      <div class="controls">
+        <td><input id="edit_manager_ip" type="text" name='manager_ip'><span class="help-block">用于登录管理的IP</span></td>
+      </div>
+	</div>
+	<div class="control-group">
+      <label class="control-label" for="server_ip">服务IP</label>
+      <div class="controls">
+        <td><input id="edit_server_ip" type="text" name='server_ip'><span class="help-block">用于RS提供服务的IP</span></td>
+      </div>
+	</div>
+	<div class="control-group">
+      <label class="control-label" for="weight">权重</label>
+      <div class="controls">
+        <td><input id="edit_weight" type="text" name='weight'><span class="help-block">用于调节RS的负载压力</span></td>
+      </div>
+	</div>
+	<div class="control-group">
+      <label class="control-label" for="rs_port">port列表</label>
+      <div class="controls">
+        <td><input id="edit_rs_port" type="text" name='rs_port'><span class="help-block">端口的列表,以逗号分割</span></td>
+      </div>
+	</div>
+	<div class="control-group">
+      <label class="control-label" for="monitor_type">监控方式</label>
+      <div class="controls">
+        <select id="edit_monitor_type" class="monitor_type" name='monitor_type'>
+	    	<option value='HTTP_GET'>HTTP_GET</option>
+	    	<option value='TCP_CHECK'>TCP_CHECK</option>
+	    	<option value='MISC_CHECK'>MISC_CHECK</option>
+		</select>
+      </div>
+	</div>
+	<div id="edit_monitor_method">
+		<div class="control-group">
+	      <label class="control-label" for="path">path</label>
+	      <div class="controls">
+	        <td><input id="path" class="edit_monitor_method_input" type="text" name='path'></td>
+	      </div>
+		</div>
+		<div class="control-group">
+	      <label class="control-label" for="digest">digest</label>
+	      <div class="controls">
+	        <td><input id="digest" class="edit_monitor_method_input" type="text" name='digest'></td>
+	      </div>
+		</div>
+		<div class="control-group">
+	      <label class="control-label" for="edit_connect_timeout">连接超时时间</label>
+	      <div class="controls">
+	        <td><input id="connect_timeout" class="edit_monitor_method_input" type="text" name='connect_timeout'></td>
+	      </div>
+		</div>
+		<div class="control-group">
+	      <label class="control-label" for="nb_get_retry">重连次数</label>
+	      <div class="controls">
+	        <td><input id="nb_get_retry" class="edit_monitor_method_input" type="text" name='nb_get_retry'></td>
+	      </div>
+		</div>
+		<div class="control-group">
+	      <label class="control-label" for="delay_before_retry">重连间隔时间</label>
+	      <div class="controls">
+	        <td><input id="delay_before_retry" class="edit_monitor_method_input" type="text" name='delay_before_retry'></td>
+	      </div>
+		</div>
+	</div>
+  </fieldset>
+  </form>
+</div>
+
+</div>
+<script type="text/javascript">
+	var rs_list = []
+	var rs_num_now
+	$.ajax({
+		  type: 'GET' ,
+          url: '/lvsmanager_deploy_get_rs_list/?id={{ vipinstance._id }}' ,
+          data_type: 'json' ,
+          cache: false ,
+          success: function(data) {
+               	rs_list = $.parseJSON(data) ;
+               	rs_table() ;
+          },
+      });
+
+	//onselect monitor_type
+	$("#monitor_type").change(function() {
+		var monitor_type = $("#monitor_type").val()
+		if (monitor_type == 'TCP_CHECK') {
+			inputlist = {"connect_timeout":"超时时间"} ;
+		}
+		else if (monitor_type == 'HTTP_GET') {
+			inputlist = {"path":"path","digest":"digest","connect_timeout":"超时时间","nb_get_retry":"重连次数","delay_before_retry":"重连间隔时间"} ;
+		}
+		else {
+			inputlist = {"misc_path":"执行脚本","misc_timeout":"超时时间"} ;
+		} ;
+
+		_html = format_monitor_method_input(inputlist) ;
+		$("#monitor_method").html(_html) ;
+	});
+
+	$("#edit_monitor_type").change(function() {
+			var monitor_type = $("#edit_monitor_type").val()
+			if (monitor_type == 'TCP_CHECK') {
+				inputlist = {"connect_timeout": ["超时时间",'']} ;
+			}
+			else if (monitor_type == 'HTTP_GET') {
+				inputlist = {"path":["path",''],"digest":["digest",''],"connect_timeout":["超时时间",''],"nb_get_retry":["重连次数",''],"delay_before_retry":["重连间隔时间",'']} ;
+			}
+			else {
+				inputlist = {"misc_path":["执行脚本",''],"misc_timeout":["超时时间",'']} ;
+			} ;
+			_html = format_monitor_method_edit_input(inputlist) ;
+			$("#edit_monitor_method").html(_html) ;
+		});
+
+
+	$( "#dialog-form" ).dialog({
+      autoOpen: false,
+      height: 600,
+      width: 400,
+      modal: true,
+      buttons: {
+        "保存": function() {
+        	monitor_new = new Object ;
+        	monitor = new Object ;
+        	monitor_new['manager_ip'] = $("#manager_ip").val() ;
+        	monitor_new['server_ip'] = $("#server_ip").val() ;
+        	monitor_new['port'] = $("#rs_port").val() ;
+        	monitor_new['weight'] = $("#weight").val() ;
+        	monitor['type'] = $("#monitor_type").val() ;
+        	$(".monitor_method_input").each(function() {
+        		var key = $(this).attr('id') ;
+        		var value = $(this).val() ;
+        		monitor[key] = value ;
+        	})
+        	monitor_new['monitor'] = monitor ;
+        	rs_list.push(monitor_new) ;
+        	rs_table() ;
+            $( this ).dialog( "close" );
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+        }
+      },
+      close: function() {
+        
+      }
+
+    });
+
+	$( "#dialog-form-edit" ).dialog({
+	      autoOpen: false,
+	      height: 600,
+	      width: 400,
+	      modal: true,
+	      buttons: {
+	        "保存修改": function() {
+	        	monitor_new = new Object ;
+	        	monitor = new Object ;
+	        	monitor_new['manager_ip'] = $("#edit_manager_ip").val() ;
+	        	monitor_new['server_ip'] = $("#edit_server_ip").val() ;
+	        	monitor_new['port'] = $("#edit_rs_port").val() ;
+	        	monitor_new['weight'] = $("#edit_weight").val() ;
+	        	monitor['type'] = $("#edit_monitor_type").val() ;
+	        	$(".edit_monitor_method_input").each(function() {
+	        		var key = $(this).attr('id') ;
+	        		var value = $(this).val() ;
+	        		monitor[key] = value ;
+	        	})
+	        	monitor_new['monitor'] = monitor ;
+	        	rs_list[rs_num_now] = monitor_new ;
+	        	rs_table() ;
+	            $( this ).dialog( "close" );
+	        },
+	        Cancel: function() {
+	          $( this ).dialog( "close" );
+	        }
+	      },
+	      close: function() {
+	        
+	      }
+
+	    });
+
+	$("#rs_add").click(function() {
+		$( "#dialog-form" ).dialog( "open" );
+	});
+
+	function rs_table() {
+		var html = ''
+		for (rs in rs_list) {
+			_rs = rs_list[rs] ;
+			html += '<tr><td>' + _rs['manager_ip'] + '</td><td>' + _rs['server_ip'] + '</td><td>' +
+			_rs['weight'] + '</td><td>' + _rs['port'] + '</td><td>' +_rs['monitor']['type'] + '</td><td><a href="javascript:rs_remove(' + rs + ')" ><span class="fui-cross"></span>delete</a><a style="position: relative ; left: 10px;" href="javascript:rs_edit(' + rs + ')" ><span class="fui-new"></span>edit</a></td></tr>'
+		}
+		$("#rs_talbe_body").html(html)
+	};
+
+
+	function format_monitor_method_input(input_list) {
+		var html = ''
+		for (i in input_list) {
+			html += '<div class="control-group"><label class="control-label" for="' + i + '">' + input_list[i] + '</label> <div class="controls">' +
+	     			'<td><input class="monitor_method_input" id="' + i + '" type="text" name="' + i + '"></td></div></div>'
+		}
+		return html
+	};
+
+	function format_monitor_method_edit_input(input_list) {
+		var html = ''
+		for (i in input_list) {
+			html += '<div class="control-group"><label class="control-label" for="' + i + '">' + input_list[i][0] + '</label> <div class="controls">' +
+	     			'<td><input class="edit_monitor_method_input" id="' + i + '" type="text" name="' + i + '" value="' + input_list[i][1] + '"></td></div></div>'
+		}
+		return html
+	};
+
+
+	$("#lvs_deploy_add_submit").click(function() {
+		bootbox.confirm('是否保存修改',function(result) {
+			if ( result ) {
+				var _rs_list = []
+						post_data = new Object() ;
+						post_data['cluster_id'] = "{{ vipinstance.cluster_id }}"
+						$(".lvs_manager_deploy_add_vip_input").each(function() {
+							var key = $(this).attr('id') ;
+							var value = $(this).val() ;
+							post_data[key] = value ;
+						})
+						$(".lvs_manager_deploy_add_vip_checkbox").each(function() {
+							var key = $(this).attr('id') ;
+							var value = $(this).attr('checked') ;
+							if (value == 'checked') {
+								var _value = true
+							} else {
+								var _value = false
+							}
+							post_data[key] = _value ;
+						})
+						for (rs in rs_list) {
+							if ( rs_list[rs] ) {
+								_rs_list.push(rs_list[rs])
+							}
+						};
+						post_data['rs'] = _rs_list ;
+						var _post_data = $.toJSON(post_data)
+						var loading=new ol.loading({id:"lvsmanager_deploy_add_body"}) ;
+						$.ajax({
+						  type: 'POST' ,
+				          url: '/lvsmanager_deploy_edit/?id={{ vipinstance._id}}' ,
+				          data: _post_data ,
+				          cache: false ,
+				          beforeSend: function() { loading.show()} ,
+				          success: function(data) {
+				          		loading.hide()  ;
+				               	window.location.href="/lvsmanager_deploy/?id={{ vipinstance.cluster_id }}"
+				          },
+				          error: function(XMLHttpRequest) {
+				          	loading.hide()  ;
+				          	bootbox.alert('提交失败:' + XMLHttpRequest)
+				          }
+				      });
+			}
+		})
+	})
+
+
+	function rs_remove(rs_num) {
+		bootbox.confirm('是否删除RS配置',function(result) {
+			if (result) {
+				delete rs_list[rs_num] ;
+				rs_table() ;
+			}
+		})
+	};
+
+	function rs_edit(rs_num) {
+		$( "#dialog-form-edit" ).dialog( "open" );
+		rs_num_now = rs_num
+		obj = rs_list[rs_num] ;
+		obj_monitor = obj['monitor']
+		$("#edit_manager_ip").val(obj['manager_ip'])
+		$("#edit_server_ip").val(obj['server_ip'])
+		$("#edit_rs_port").val(obj['port'])
+		$("#edit_weight").val(obj['weight'])
+		$("#edit_monitor_type").val(obj_monitor['type'])
+		var monitor_type = obj_monitor['type']
+		if (monitor_type == 'TCP_CHECK') {
+			inputlist = {"connect_timeout": ["超时时间",obj_monitor['connect_timeout']]} ;
+		}
+		else if (monitor_type == 'HTTP_GET') {
+			inputlist = {"path":["path",obj_monitor['path']],"digest":["digest",obj_monitor['digest']],"connect_timeout":["超时时间",obj_monitor['connect_timeout']],"nb_get_retry":["重连次数",obj_monitor['nb_get_retry']],"delay_before_retry":["重连间隔时间",obj_monitor['delay_before_retry']]} ;
+		}
+		else {
+			inputlist = {"misc_path":["执行脚本",obj_monitor['misc_path']],"misc_timeout":["超时时间",obj_monitor['misc_timeout']]} ;
+		} ;
+
+		_html = format_monitor_method_edit_input(inputlist) ;
+		$("#edit_monitor_method").html(_html) ;
+
+		console.log(rs_list[rs_num]) ;
+	}
+
+
+</script>
+{% endblock %}

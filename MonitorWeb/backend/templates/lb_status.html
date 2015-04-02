@@ -1,0 +1,88 @@
+{% extends "status.html" %}
+{% block active_lb_status %}class="active"{% endblock %}
+{% block status %}
+</br>
+<select id="cluster_status_select"  class="inline" >
+{% for cluster in cluster_list %}
+  <option value="{{cluster.id}}">{{cluster.id}}</option>
+{% endfor %}
+</select>
+<div id="status_table_body"></div>
+
+<!--
+<div id="status_vip_table_modal" class="modal  fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>LVS状态</h3>
+  </div>
+  <div class="modal-body" >
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+  </div>
+</div>
+-->
+<div class="toggler">
+  <div id="status_vip_table_modal">
+    <div id="status_vip_table_body"></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$("select").selectpicker({style: 'btn-primary', menuStyle: 'dropdown-inverse'});
+
+
+//初始化的时候，拿select的第一个cluster
+id = $("#cluster_status_select").val() ;
+table_callback(id) ;
+
+// 监听 select 事件
+$("#cluster_status_select").change(function() {
+  var id = $(this).val() ;
+  $('#status_vip_table_modal').hide() ;
+  table_callback(id) ;
+})
+
+
+function table_callback(id) {
+  $.ajax({
+      url: '/lb_status_table?id=' + id ,
+      cache: false ,
+      success: function(data) {
+        $("#status_table_body").html(data);
+        vip_click_event() ;
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        alert('失败') ;
+      },
+  });
+}
+
+function vip_click_event() {
+  // 监听 表格里面  vip的字段的click时间，展现详细
+  $(".status_vip_click").click(function() {
+    var id = $(this).attr('id') ;
+    var selectedEffect = 'fold' ;
+    var options = {}
+    $('#status_vip_table_modal').hide(selectedEffect,options,1000) ;
+    $('#status_vip_table_modal').show(selectedEffect,options,1000) ;
+    //$("#status_vip_table_modal").modal() ;
+    var loading=new ol.loading({id:"status_table_body"}) ;
+    $.ajax({
+        url: '/lb_vip_status_table?id=' + id ,
+        beforeSend: function() { loading.show() } ,
+        cache: false ,
+        success: function(data) {
+          loading.hide() ;
+          $("#status_vip_table_body").html(data);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          loading.hide() ;
+          alert('失败') ;
+        },
+    });
+  })
+  
+}
+</script>
+{% endblock %}

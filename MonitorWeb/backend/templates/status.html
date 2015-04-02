@@ -1,0 +1,18 @@
+{% extends "index.html" %}
+{% block body %}
+<div class="container">
+  <div class='row'>
+    <!-- todo list -->
+    <div class="col-md-12">
+      <ul class="nav nav-tabs">
+        <li {% block active_lb_status %}{% endblock %}><a href="/lb_status/">LoadBlance调度机</a></li>
+        <li {% block active_diff_status %}{% endblock %}><a href="/lb_status_diff/">状态变化</a></li>
+        <li {% block active_publish %}{% endblock %}><a href="/lb_status_publish/">配置提交信息</a></li>
+      </ul>
+    </div>
+    <div class="col-md-12">
+      <div>{% block status %}{% endblock %}</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

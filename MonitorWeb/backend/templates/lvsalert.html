@@ -1,0 +1,149 @@
+{% extends "index.html" %}
+{% block body %}
+<style>
+ table { table-layout: fixed; }
+ table th, table td { overflow: hidden; }
+</style>
+<div class="container">
+  <div class='row'>
+
+  	<!-- service is down -->
+  	<div class='col-md-3'>
+  		<div class="pallete-item">
+  		  <dl class="palette palette-alizarin" style="text-align: center;">
+  		    <dd style="position: relative; right: 7px;">service_is_down</dd>
+  		  </dl>
+  		  <dl class="palette palette-pomegranate" style="text-align: center;">
+  		    <dd><a style="color: white;" href="/lvsalert/?alert_type=service_is_down&date={{ date }}">{{ service_is_down_count }}</a></dd>
+  		  </dl>
+  		</div>
+  	</div>
+
+  	<!-- service is up -->
+  	<div class='col-md-3'>
+  		<div class="pallete-item">
+  		  <dl class="palette palette-turquoise" style="text-align: center;">
+  		    <dd >service_is_up</dd>
+  		  </dl>
+  		  <dl class="palette palette-green-sea" style="text-align: center;">
+  		    <dd><a style="color: white;" href="/lvsalert/?alert_type=service_is_up&date={{ date }}">{{ service_is_up_count }}</a></dd>
+  		  </dl>
+  		</div>
+  	</div>
+
+  	<!-- rs is down -->
+  	<div class='col-md-3'>
+  		<div class="pallete-item">
+  		  <dl class="palette palette-sun-flower" style="text-align: center;">
+  		    <dd>rs_is_down</dd>
+  		  </dl>
+  		  <dl class="palette palette-orange" style="text-align: center;">
+  		    <dd><a style="color: white;" href="/lvsalert/?alert_type=rs_is_down&date={{ date }}">{{ rs_is_down_count }}</a></dd>
+  		  </dl>
+  		</div>
+  	</div>
+
+  	<!-- rs is down -->
+  	<div class='col-md-3'>
+  		<div class="pallete-item">
+  		  <dl class="palette palette-peter-river" style="text-align: center;">
+  		    <dd>rs_is_up</dd>
+  		  </dl>
+  		  <dl class="palette palette-belize-hole" style="text-align: center;">
+  		    <dd><a style="color: white;" href="/lvsalert/?alert_type=rs_is_up&date={{ date }}">{{ rs_is_up_count }}</a></dd>
+  		  </dl>
+  		</div>
+  	</div>
+
+  </div>
+  <div class='row'>
+    <div class="col-md-12">
+      <div class="well form-search" method="get" action="">
+        <p>
+         <select name="search_field" id="id_search_field">
+			 <option value="rs">RS/真实机</option>
+			 <option value="vip_group">VIP_GROUP/虚拟IP</option>
+		 </select>
+		 <input id="id_search_str" type="text" class="input-xlarge search-query" name="search_str" maxlength="50" style="position: relative;top: -4px;" />
+		 <input id='alert_datepicker' style="position: relative;top: -5px;left: 250px;"></input>
+		</p>
+			<button id="search_submit" class="btn btn-primary">搜索</button>
+      </div>
+    </div>
+  </div>
+  <!-- list table -->
+  <div class='row'>
+  	<div class="col-md-12">
+  	  <table class="table table-bordered table-hover" id="alert_table">
+  	    <thead>
+             <tr>
+               <th style="width: 15%">时间</th>
+               <th style="width: 20%">VIP_GROUP</th>
+               <th style="width: 20%">业务</th>
+               <th style="width: 15%">负责人</th>
+               <th style="width: 15%">真实机</th>
+               <th style="width: 15%">报警类型</th>
+             </tr>
+           </thead>
+           <tbody>
+           	 {% for alert in alert_dict %}
+           	 <tr>
+           	 	<td>{{ alert.time | timestamptodate }}</td>
+           	 	<td>{% for vip in alert.vip_group %}
+           	 	{{ vip }}{% endfor %}</td>
+           	 	<td><a href="/lvsalert/?vip_instance={{ alert.vip_instance }}&date={{ date }}">{{ alert.descript }}</a></td>
+           	 	<td>{{ alert.owners }}</td>
+           	 	<td><a href="/lvsalert/?rs={{ alert.rs | format_rs_str }}&date={{ date }}">{{ alert.rs }}</a></td>
+           	 	<td>{% if alert.alert_type == 'rs_is_down' %}
+           	 			<a href="#" class="btn btn-block btn-warning " title="{{ alert.message }}">{{ alert.alert_type }}</a>
+           	 		{% elif alert.alert_type == 'service_is_down' %}
+           	 			<a href="#" class="btn btn-block btn-danger " title="{{ alert.message }}">{{ alert.alert_type }}</a>
+           	 		{% elif alert.alert_type == 'rs_is_up' %}
+           	 			<a href="#" class="btn btn-block btn-info " title="{{ alert.message }}">{{ alert.alert_type }}</a>
+           	 		{% elif alert.alert_type == 'service_is_up' %}
+           	 			<a href="#" class="btn btn-block btn-primary " title="{{ alert.message }}">{{ alert.alert_type }}</a>
+           	 		{% endif %}</td>
+           	 </tr>
+           	 {% endfor %}
+           </tbody>
+  	  </table>
+  	</div>
+  </div>
+</div>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		$("select").selectpicker({style: 'btn-info', menuStyle: 'dropdown-inverse'});
+		$("#alert_datepicker").datepicker({
+            minDate: -20, 
+            maxDate: 0,
+            dateFormat: "yy-mm-dd"
+  		}) ;
+
+		$('#alert_table').dataTable( {       
+		        "oLanguage": {
+		        "sUrl": "/lib/dataTable-bootstrap/zh_CN.json"
+		      } ,
+		        "aaSorting": [ [0,'desc']] ,
+		        "iDisplayLength": 100 ,
+		        "aLengthMenu": [[100, 200, 300, -1], [100, 200, 300, "All"]] 
+		});
+
+		// init select and datepicker
+  		$("#alert_datepicker").datepicker("setDate","{{ date }}") ;
+
+		$("#search_submit").click(function() {
+			var key = $("#id_search_field").val()
+			var value = $("#id_search_str").val()
+			var date = $("#alert_datepicker").val()
+			if ( value ) {
+				window.location.href="?" + key + "=" + value + '&date=' + date
+			}
+			else {
+				window.location.href="?date=" + date
+			}
+		});
+
+	});
+</script>
+{% endblock %}

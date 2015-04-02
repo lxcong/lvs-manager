@@ -1,0 +1,143 @@
+<div class="container-fluid">
+	<!-- salt minion 认证框 -->
+	<div class="row">
+		<div class="span3">
+			<dl class="palette palette-turquoise">
+				<dt>经过认证</dt>
+			</dl>
+			<dl class="palette palette-green-sea">
+				<dt>1</dt>
+			</dl>
+		</div>
+		<div class="span3">
+			<dl class="palette palette-emerald">
+				<dt>未认证的</dt>
+			</dl>
+			<dl class="palette palette-nephritis">
+				<dt>10</dt>
+			</dl>
+		</div>
+		<div class="span3">
+			<dl class="palette palette-peter-river">
+				<dt>状态正常</dt>
+			</dl>
+			<dl class="palette palette-belize-hole">
+				<dt>10</dt>
+			</dl>
+		</div>
+		<div class="span3">
+			<dl class="palette palette-alizarin">
+				<dt>失去连接</dt>
+			</dl>
+			<dl class="palette palette-pomegranate">
+				<dt>0</dt>
+			</dl>
+		</div>
+	</div>
+</br>
+	<div class="row">
+		<h1>Minion</h1>
+		<hr>
+	</div>
+	<!-- 搜索操作栏 -->
+	<div class="row">
+		<div class="span1">
+			<a href="#fakelink" class="btn btn-block btn-primary">过滤</a>
+		</div>
+		<div class="span3">
+			<input type="text" class="span3" placeholder="填入过滤字符" >
+		</div>
+        <div class="span8">
+          <select name="herolist" class="select-block span3">
+            <option value="0">删除</option>
+            <option value="1">设置</option>
+          </select>
+    		<button type="button" class="btn btn-primary" ng-model="singleModel" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+    		  GO
+    		</button>
+          <button class="btn" title="Fetch status and grains and ping all minions">
+            <i class="icon-refresh">
+            </i>
+          </button>
+         </div>
+	</div>
+</br>
+	<!-- 一个节点信息块 -->
+	<div class="row" >
+		<div class="span1">
+			<label class="checkbox">
+			<input type="checkbox" id="1" value="" data-toggle="checkbox">
+			</label>
+		</div>
+		<div class="span11">
+			<div class="widget">
+				<div class="widget-head" ng-init="collapsed=true" ng-click="collapsed = !collapsed"  title="Click to toggle grains display">
+					<span class="label pull-left" title="Minion Id: Green=grains, Orange=no grains"  ng-class="minion.val.get('grains')?'label-info':'label-warning'">
+					<bold  style="font-size: larger"></bold>
+					</span>
+      				<div class="widget-icons pull-right">
+      				  <span class="badge" title="Latest ping: Green=success, Red=failure" 
+      				    ng-class="minion.val.get('ping')?'badge-success':'badge-important'">
+      				    <i class="icon-bullhorn icon-white"></i>
+      				  </span>
+      				  <span class="badge" title="Latest status: Green=up, Red=down"
+      				    ng-class="minion.val.get('status')?'badge-success':'badge-important'">
+      				    <i class="icon-fire icon-white"></i>
+      				  </span>
+      				  <a href="" ng-click="collapsed = !collapsed; $event.stopPropagation();">
+      				    <i class="icon-chevron-down" title="Click to toggle grains disoplay" 
+      				      ng-class="collapsed?'icon-chevron-down':'icon-chevron-up'"></i>
+      				  </a> 
+      				</div> 
+      				<div class="clearfix"></div>
+      			</div>
+				<div class="widget-content" collapse="collapsed">
+					<tabset>
+						<tab heading="Info">
+						</tab>
+					</tabset>
+				</div>
+      		</div>
+      	</div>
+    </div>
+
+    <!-- 一个节点信息块 -->
+	<div class="row" >
+		<div class="span1">
+			<label class="checkbox">
+			<input type="checkbox" id="1" value="" data-toggle="checkbox">
+			</label>
+		</div>
+		<div class="span11">
+			<div class="widget">
+				<div class="widget-head" ng-init="collapsed=true" ng-click="collapsed = !collapsed"  title="Click to toggle grains display">
+					<span class="label pull-left" title="Minion Id: Green=grains, Orange=no grains"  ng-class="minion.val.get('grains')?'label-info':'label-warning'">
+					<bold  style="font-size: larger"></bold>
+					</span>
+      				<div class="widget-icons pull-right">
+      				  <span class="badge" title="Latest ping: Green=success, Red=failure" 
+      				    ng-class="minion.val.get('ping')?'badge-success':'badge-important'">
+      				    <i class="icon-bullhorn icon-white"></i>
+      				  </span>
+      				  <span class="badge" title="Latest status: Green=up, Red=down"
+      				    ng-class="minion.val.get('status')?'badge-success':'badge-important'">
+      				    <i class="icon-fire icon-white"></i>
+      				  </span>
+      				  <a href="" ng-click="collapsed = !collapsed; $event.stopPropagation();">
+      				    <i class="icon-chevron-down" title="Click to toggle grains disoplay" 
+      				      ng-class="collapsed?'icon-chevron-down':'icon-chevron-up'"></i>
+      				  </a> 
+      				</div> 
+      				<div class="clearfix"></div>
+      			</div>
+				<div class="widget-content" collapse="collapsed">
+					<tabset>
+						<tab heading="Info">
+						</tab>
+					</tabset>
+				</div>
+      		</div>
+      	</div>
+    </div>
+
+</div>

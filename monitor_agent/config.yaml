@@ -1,0 +1,6 @@
+keepalived_log_file: "/data/log/ipvs/keepalived.log"
+info_yaml_file: "/etc/keepalived/info.yaml"
+lvs_cluster_alert_api: "http://lvs.ksops.com:9080/api/alert"
+mail_host: 10.10.0.43
+mail_me: "lvs-alert<lvs-alert@ijinshan.com>"
+logfile: "/var/log/keepalived_log_analyze.log"

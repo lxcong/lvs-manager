@@ -1,0 +1,88 @@
+{% extends "status.html" %}
+{% block active_diff_status %}class="active"{% endblock %}
+{% block status %}
+</br>
+<select id="cluster_diff_select"  class="inline" >
+{% for cluster in cluster_list %}
+  <option value="{{cluster.id}}">{{cluster.id}}</option>
+{% endfor %}
+</select>
+<div id="diff_table_body"></div>
+
+<div class="toggler">
+  <div id="diff_table_modal">
+    <div id="diff_agent_table_body"></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+var start ;
+var end ;
+$("select").selectpicker({style: 'btn-primary', menuStyle: 'dropdown-inverse'});
+
+//初始化的时候，拿select的第一个cluster
+id = $("#cluster_diff_select").val() ;
+date = new Date()
+years = date.getFullYear() ;
+month = date.getMonth() + 1;
+day = date.getDate() ;
+start = Date.parse(month + '/' + day + '/' + years + ' 00:00:00') / 1000
+end = Date.parse(month + '/' + day + '/' + years + ' 23:59:59') / 1000
+table_callback(id,start,end) ;
+
+
+// 监听 select 事件
+$("#cluster_diff_select").change(function() {
+  var id = $(this).val() ;
+  $('#diff_table_modal').hide() ;
+  table_callback(id,start,end) ;
+})
+
+function table_callback(id,start,end) {
+  console.log(start) ;
+  console.log(end) ;
+  $.ajax({
+      url: '/lb_status_diff_talbe?id=' + id + '&start=' + start + '&end=' + end,
+      cache: false ,
+      success: function(data) {
+        $("#diff_table_body").html(data);
+        diff_click_event() ;
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        alert('失败') ;
+      },
+  });
+}
+
+function diff_click_event() {
+  // 监听 表格里面  vip的字段的click时间，展现详细
+  $(".diff_click").click(function() {
+    var par = $(this).parent()
+    var id = $(par).attr('id') ;
+    var selectedEffect = 'fold' ;
+    var options = {}
+    $('#diff_table_modal').hide(selectedEffect,options,1000) ;
+    $('#diff_table_modal').show(selectedEffect,options,1000) ;
+    //$("#status_vip_table_modal").modal() ;
+    var loading=new ol.loading({id:"diff_table_body"}) ;
+    $.ajax({
+        url: '/lb_status_diff_agent_table?id=' + id + '&start=' + start + '&end=' + end,
+        beforeSend: function() { loading.show() } ,
+        cache: false ,
+        success: function(data) {
+          loading.hide() ;
+          $("#diff_agent_table_body").html(data);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          loading.hide() ;
+          alert('失败') ;
+        },
+    });
+  })
+}
+
+function DateToTimestamp(date) {
+  return Date.parse(date)
+};
+</script>
+{% endblock %}

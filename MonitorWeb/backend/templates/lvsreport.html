@@ -1,0 +1,416 @@
+{% extends "index.html" %}
+{% block body %}
+<div class="container">
+  {% if error_msg %}
+  <div class="alert alert-error">
+    <button type="button" class="close" data-dismiss="alert">¡Á</button>
+    <h4>{{ error_msg }}</h4>
+  </div>
+  {% endif %}
+  <div class='row'>
+    <!-- todo list -->
+    <div class="col-md-12">
+      <select id="cluster_select" class='inline'>
+          {% for cluster in cluster_list %}
+          <option value="{{ cluster.id }}">{{ cluster.id }}</option>
+          {% endfor %}
+      </select>
+       <input id='datepicker' style="width: 150px;height: 40px;position: relative;top: -5px;"></input>
+        <button id='run' type='button' class="btn btn-info inline" style="position:relative;top: -5px;left: 20px ">Run</button>
+    </div>
+    </br>
+    <div class="col-md-12">
+      <div>
+        <h3>Date: {{ report_result.time }}</h3>
+        <h4>Cluster: {{ report_result.id }}</h4>
+        <hr>
+        <h6>1)集群日流量图:</h6>
+        <div id="lvsreport_charts"></div>
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>direction</th>
+              <th>traffic_avg</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Input</td>
+              <td>{{ report_result.cluster_traffic_sum.in_traffic_avg | bytesformat}}</td>
+            </tr>
+            <tr>
+              <td>Output</td>
+              <td>{{ report_result.cluster_traffic_sum.out_traffic_avg | bytesformat}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <hr>
+        <h6>2)集群VIP Max前五:</h6>
+        <div id='vip_max_5_pip_input' style="min-width:400px;height:400px;margin:0 auto;"></div></br>
+        <div id='vip_max_5_pip_output' style="min-width:400px;height:400px;margin:0 auto;"></div></br>
+        <hr>
+        <h6>3)集群VIP详细列表:</h6>
+        </br>
+        <table id="vip_detail_table" class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>VIP</th>
+              <th>in流量最大值</th>
+              <th>in流量平均值</th>
+              <th>out方向最大值</th>
+              <th>out方向平均值</th>
+              <th>负责人</th>
+              <th>业务</th>
+              <th>charts</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in report_result.vip_traffic_sum %}
+            <tr>
+              <td>{{ i.vip }}</td>
+              <td>{{ i.in_traffic_max | bytesformat}}</td>
+              <td>{{ i.in_traffic_avg | bytesformat}}</td>
+              <td>{{ i.out_traffic_max | bytesformat}}</td>
+              <td>{{ i.out_traffic_avg | bytesformat}}</td>
+              <td>{{ i.owners }}</td>
+              <td>{{ i.descript }}</td>
+              <td><a id="{{ report_result.id }}-{{ i.vip }}" class="btn btn-block btn-warning vipcharts">数据</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <hr>
+        <h6>4)集群发生状态变化的次数</h6>
+        </br>
+        <h5><p>{{ report_result.id }}:  {{ report_result.cluster_diff_sum }}</p></h5>
+      </div>
+    </div>
+  </div>
+
+  <!-- messagemodal -->
+  <div id="lvsreport_messagemodal" class="modal  fade">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3>数据图像</h3>
+        </div>
+        <div class="modal-body" id="messagebody">
+        <div id="lvsreport_messagecharts" ></div>
+        </div>
+        <div class="modal-footer" >
+          <button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+        </div>
+      </div>
+  </div>
+<script type="text/javascript">
+$(document).ready(function(){
+  $("select").selectpicker({style: 'btn-primary', menuStyle: 'dropdown-inverse'});
+  $( "#datepicker" ).datepicker({
+            minDate: -20, 
+            maxDate: -1,
+            dateFormat: "yy-mm-dd"
+  });
+
+  // init select and datepicker
+  $("#datepicker").datepicker("setDate","{{ report_result.time }}") ;
+  $("#cluster_select").selectpicker('val','{{ report_result.id }}') ;
+
+
+  // run button href
+  $("#run").click(function() {
+    var date = $("#datepicker").val()
+    var cluster_id = $("#cluster_select").val()
+    window.location.href="?id=" + cluster_id + '&date=' + date
+  });
+
+  // vip charts
+   $(".vipcharts").click(function() {
+      var _id = $(this).attr("id") ;
+      var arr = _id.split("-")
+      var id = arr[0]
+      var vip = arr[1]
+      lvstraffic_cluster_vip(id,vip,'{{ start }}','{{ end }}');
+  });
+
+  url = '/api/getlvstrafficcluster/?agent={{ report_result.id }}&start={{ start }}&end={{ end }}'
+  series = {"inbytes_sum": "IN总流量 bytes/s" , "outbytes_sum": "OUT总流量 bytes/s"}
+  init_charts_lvs_traffic(url,'hours',series) ;
+
+  var input_arry = {
+    {% for i in report_result.in_vip_traffic_max_five %}
+    "{{ i.vip }}": {"owners":"{{ i.owners }}","descript":"{{ i.descript }}"} ,
+    {% endfor %}
+  } ;
+
+  var output_arry = {
+      {% for i in report_result.out_vip_traffic_max_five %}
+      "{{ i.vip }}": {"owners":"{{ i.owners }}","descript":"{{ i.descript }}"} ,
+      {% endfor %}
+    } ;
+
+  // Build the Vip max 5 input
+      $('#vip_max_5_pip_input').highcharts({
+          chart: {
+              plotBackgroundColor: null,
+              plotBorderWidth: null,
+              plotShadow: false
+          },
+          title: {
+              text: 'Vip Max Five (INPUT)'
+          },
+          tooltip: {
+            pointFormat: '{series.name}: <b>{point.y}</b>'
+          },
+          plotOptions: {
+              pie: {
+                  allowPointSelect: true,
+                  cursor: 'pointer',
+                  dataLabels: {
+                      enabled: true,
+                      color: '#000000',
+                      connectorColor: '#000000',
+                      formatter: function() {
+                          return '<b>'+ this.point.name +'<br>'+  get_input_owners_descript(this.point.name,'descript') + '<br>' + get_input_owners_descript(this.point.name,'owners') + '<br>Value:' + bytesToSize(this.y) ;
+                      }
+                  }
+              }
+          },
+          series: [{
+              type: 'pie',
+              name: 'Values',
+              data: [
+                {% for i in report_result['in_vip_traffic_max_five'] %}
+                  ['{{ i.vip }}',  {{ i.in_traffic_avg }}],
+                {% endfor %}
+              ]
+          }]
+      });
+
+  // Build the Vip max 5 output
+      $('#vip_max_5_pip_output').highcharts({
+          chart: {
+              plotBackgroundColor: null,
+              plotBorderWidth: null,
+              plotShadow: false
+          },
+          title: {
+              text: 'Vip Max Five (OUTPUT)'
+          },
+          tooltip: {
+            pointFormat: '{series.name}: <b>{point.y}</b>'
+          },
+          plotOptions: {
+              pie: {
+                  allowPointSelect: true,
+                  cursor: 'pointer',
+                  dataLabels: {
+                      enabled: true,
+                      color: '#000000',
+                      connectorColor: '#000000',
+                      formatter: function() {
+                          return '<b>'+ this.point.name +'<br>'+  get_output_owners_descript(this.point.name,'descript') + '<br>' + get_output_owners_descript(this.point.name,'owners') + '<br>Value:' + bytesToSize(this.y) ;
+                      }
+                  }
+              }
+          },
+          series: [{
+              type: 'pie',
+              name: 'Values',
+              data: [
+                {% for i in report_result['out_vip_traffic_max_five'] %}
+                  ['{{ i.vip }}',  {{ i.out_traffic_avg }}],
+                {% endfor %}
+              ]
+          }]
+      });
+
+  //  dataTable 
+  $('#vip_detail_table').dataTable( {       
+        "oLanguage": {
+        "sUrl": "/lib/dataTable-bootstrap/zh_CN.json"
+      } ,
+        "aaSorting": [ [5,'desc']] ,
+        "iDisplayLength": -1 ,
+        "aLengthMenu": [[5, 10, 25, -1], [5, 10, 25, "All"]] 
+  });
+
+  // btytes to human readable
+  function bytesToSize(bytes) {
+     var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+     if (bytes == 0) return '0 Bytes';
+     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+     return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+  };
+
+
+  function lvstraffic_cluster_vip(id,vip,start,end) {
+
+      url = '/api/getlvstrafficclustervip/?agent=' + id  +'&vip=' + vip + '&start={{ start }}&end={{ end }}'
+      series = {"inbytes": "IN流量 bytes/s" , "outbytes": "OUT流量 bytes/s"}
+      init_charts(url,'hours',series) ;
+  }
+
+  function init_charts(url,time_type,series) {
+          var loading=new ol.loading({id:"vip_detail_table"}) ;
+          
+          $.ajax({
+              url: url,
+              beforeSend: function() { loading.show() } ,
+              dataType: "json",
+              error: function(XMLHttpRequest, textStatus, errorThrown) {
+                  alert(errorThrown) ;
+              },
+              success: function (obj) {
+                  loading.hide() ;
+                  $.each(obj,function(id,id_dict) {
+                      _series = [] ;
+                      for (i in series) {
+                          _series.push({"name":series[i], "data":id_dict[i]}) ;
+                      };
+                      var arg = {"renderTo": 'lvsreport_messagecharts' ,"title": id_dict.title, "time_type": time_type, "series":_series }
+                      var traffic_charts = highchartsformat(arg) ;
+                      traffic_charts.chart.width = 1230
+                      var chart = new Highcharts.Chart(traffic_charts) ;
+                      $("#lvsreport_messagemodal").modal();
+
+                  });
+              },
+              cache: false
+          });
+      
+      };
+
+  function init_charts_lvs_traffic(url,time_type,series) {
+        var loading=new ol.loading({id:"lvsreport_charts"}) ;
+        
+        $.ajax({
+            url: url,
+            beforeSend: function() { loading.show() } ,
+            dataType: "json",
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                alert(errorThrown) ;
+            },
+            success: function (obj) {
+                loading.hide() ;
+                $.each(obj,function(id,id_dict) {
+                    tpl = '<div id={{ report_result.id }} style="min-width:400px;height:400px;margin:0 auto;"></div></br>'
+                    $("#lvsreport_charts").append(tpl) ;
+                    _series = [] ;
+                    for (i in series) {
+                        _series.push({"name":series[i], "data":id_dict[i]}) ;
+                    };
+                    var arg = {"renderTo": "{{ report_result.id }}" ,"title": "{{ report_result.id }}", "time_type": time_type, "series":_series }
+                    console.log(arg)
+                    var traffic_charts = highchartsformat(arg) ;
+                    //traffic_charts.series[0].data = id_dict.inbytes_sum ;
+                    //traffic_charts.series[1].data = id_dict.outbytes_sum ;
+                    var chart = new Highcharts.Chart(traffic_charts) ;
+                });
+                //create_charts_tpl(obj);
+                //init_fliter_vip_select(obj) ;
+                //lvstraffic(obj,'hours');
+            },
+            cache: false
+        });
+    
+    };
+
+  function highchartsformat(arg) {
+      //_series = [] ;
+      title = arg.title ;
+      renderTo = arg.renderTo ;
+      time_type = arg.time_type ;
+      series = arg.series ;
+      if (time_type == "hours") {
+          ytitle = "per minute"
+      } ;
+
+      //for (i in series) {
+      //    _series.push({name:series[i]}) ;
+      //} ;
+      var charts = {
+          chart: {
+              renderTo: renderTo,
+              zoomType: 'x' ,
+              type: 'area',
+          },
+          title: {
+              text: title,
+              x: -20 //center
+          },
+          subtitle: {
+              text: 'time: {{ report_result.time }}' ,
+              x: -20
+          },
+        plotOptions: {
+            area: {
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    radius: 2,
+                    states: {
+                        hover: {
+                            enabled: true
+                        }
+                    }
+                }
+            }
+        },
+          tooltip: {
+              formatter: function() {
+                  return '<b>' + 'Time:' + format_date_full(this.x) + '</b><br/>' + this.series.name + ':' + this.y ;
+              },
+              crosshairs: {
+                  width: 2
+              },
+              style: {
+                  padding: '10px',
+              }
+          },
+          xAxis: {
+              type: 'datetime',
+              labels: {
+                  formatter: function() {
+                      return format_date_sample(this.value)
+                  }
+              }
+          },
+          yAxis: {
+              title: {
+                  text: ytitle
+              },min: 0
+          },
+          series: series
+      };
+
+      return charts
+  }
+
+    function format_date_sample(timestamp) {
+        var date = new Date(timestamp * 1000) ;
+        var hours = date.getHours() ;
+        var minutes = date.getMinutes() ;
+        return (hours + ':' + minutes) ;
+    }
+    
+    function format_date_full(timestamp) {
+        var date = new Date(timestamp * 1000) ;
+        var years = date.getFullYear() ;
+        var month = date.getMonth() ;
+        var day = date.getDate() ;
+        var hours = date.getHours() ;
+        var minutes = date.getMinutes() ;
+        var formattedTime = years + '.' + month + '.' + day + '-' + hours + ':' + minutes
+        return (formattedTime)
+    }
+
+    function get_input_owners_descript(key,owners_or_descript) {
+      return input_arry[key][owners_or_descript]
+    }
+
+    function get_output_owners_descript(key,owners_or_descript) {
+      return output_arry[key][owners_or_descript]
+    }
+
+}) ;
+</script>
+{% endblock %}
